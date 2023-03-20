@@ -38,9 +38,6 @@ from smbus import SMBus
 from itertools import cycle
 from time import sleep
 
-LED1 = 0x01
-bus = SMBus(1) # Port 1 used on REV2
-
 # set 1 for macOS, maybe 2 for windows and others
 #capture = cv2.VideoCapture(1)
 capture = cv2.VideoCapture(0)
@@ -70,15 +67,7 @@ while (capture.isOpened()):
 
     userIDs = []
     
-    id = "RICARDO"
-    '''if id in ['RICARDO']:
-        bus.write_byte(0x38,0x00)
-        sleep(1)
-        bus.write_byte(0x38,0x02)
-        sleep(1)
-        bus.write_byte(0x38,0x00)
-        print('LOCKER ABIERTO')
-'''
+    id = "Unknown"
 
     # loop over the recognized faces
     for ((x1, y1, x2, y2), id) in zip(rects,id):

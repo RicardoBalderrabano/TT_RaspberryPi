@@ -67,7 +67,7 @@ while (capture.isOpened()):
 
     userIDs = []
     
-    id = "Unknown"
+    id = "Unknownnn"
 
     # loop over the recognized faces
     for ((x1, y1, x2, y2), id) in zip(rects,id):

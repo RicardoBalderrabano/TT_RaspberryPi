@@ -39,13 +39,13 @@ from itertools import cycle
 from time import sleep
 
 LED1 = 0x01
-bus = SMBus(1) # Port 1 used on REV2 
+bus = SMBus(1) # Port 1 used on REV2
 
-# set 1 for macOS, maybe 0 for windows and others
+# set 1 for macOS, maybe 2 for windows and others
 #capture = cv2.VideoCapture(1)
 capture = cv2.VideoCapture(0)
 
-# load haar cascade
+# load haar cascade de
 haarCascade = '/home/ricardo/TT_tests/haarcascade_frontalface_default.xml'  
 
 face_cascade = cv2.CascadeClassifier(haarCascade)

@@ -33,17 +33,23 @@ import cv2
 import face_recognition
 import pickle
 import os
+from server_connection import send_encodings
 
-from smbus import SMBus
+#from smbus import SMBus
 from itertools import cycle
 from time import sleep
+
+#SERVER
+URL_SERVER = 'http://140.84.179.17:80'
+PAGE = "/encodings"
+
 
 # set 1 for macOS, maybe 2 for windows and others
 #capture = cv2.VideoCapture(1)
 capture = cv2.VideoCapture(0)
 
 # load haar cascade de
-haarCascade = '/home/ricardo/TT_tests/haarcascade_frontalface_default.xml'  
+haarCascade = 'D:\\RICARDO\\Escritorio\\upiita\\SEMESTRE 10\\TT2\\RasberryPi codes\\TT_RaspberryPi\\haarcascade_frontalface_default.xml'  
 
 face_cascade = cv2.CascadeClassifier(haarCascade)
 
@@ -63,6 +69,10 @@ while (capture.isOpened()):
     
     # get encoding of detected faces
     encodings = face_recognition.face_encodings(rgb, rects)
+
+    #sending encodings
+    send_encodings(URL_SERVER,PAGE,encodings)
+
     #print(encodings)
 
     userIDs = []

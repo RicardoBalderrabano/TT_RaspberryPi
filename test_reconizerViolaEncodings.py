@@ -49,8 +49,8 @@ PAGE = "/encodings"
 capture = cv2.VideoCapture(0)
 
 # load haar cascade de
-haarCascade = 'D:\\RICARDO\\Escritorio\\upiita\\SEMESTRE 10\\TT2\\RasberryPi codes\\TT_RaspberryPi\\haarcascade_frontalface_default.xml'  
-#haarCascade = '/home/ricardo/TT_tests/haarcascade_frontalface_default.xml'  #for rasppi
+#haarCascade = 'D:\\RICARDO\\Escritorio\\upiita\\SEMESTRE 10\\TT2\\RasberryPi codes\\TT_RaspberryPi\\haarcascade_frontalface_default.xml'  
+haarCascade = '/home/ricardo/TT_tests/haarcascade_frontalface_default.xml'  #for rasppi
 
 face_cascade = cv2.CascadeClassifier(haarCascade)
 
@@ -73,8 +73,6 @@ while (capture.isOpened()):
 
     #sending encodings
     send_encodings(URL_SERVER,PAGE,encodings)
-
-    #print(encodings)
 
     userIDs = []
     

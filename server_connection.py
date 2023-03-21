@@ -22,5 +22,5 @@ def send_encodings(URL_SERVER,PAGE,arrayEncoding):
     encodedNumpyData=json.dumps(arrayEncoding,cls=NumpyArrayEncoder)
     msg={"encoding":encodedNumpyData}
     r = requests.post(URL_SERVER+PAGE,json=msg)
-    return 
+    return r
 

@@ -34,23 +34,22 @@ import face_recognition
 import pickle
 import os
 from server_connection import send_encodings
+import json
+from flask import request
 
 #from smbus import SMBus
 from itertools import cycle
 from time import sleep
 
-#SERVER
+#SERVER DIRECTION
 URL_SERVER = 'http://140.84.179.17:80'
 PAGE = "/encodings"
 
+capture = cv2.VideoCapture(0) #0 for raspi
 
-# set 1 for macOS, maybe 2 for windows and others
-#capture = cv2.VideoCapture(1)
-capture = cv2.VideoCapture(0)
-
-# load haar cascade de
+# Load haar cascade file
 #haarCascade = 'D:\\RICARDO\\Escritorio\\upiita\\SEMESTRE 10\\TT2\\RasberryPi codes\\TT_RaspberryPi\\haarcascade_frontalface_default.xml'  
-haarCascade = '/home/ricardo/TT_tests/haarcascade_frontalface_default.xml'  #for rasppi
+haarCascade = '/home/ricardo/TT_tests/haarcascade_frontalface_default.xml'  #for raspi
 
 face_cascade = cv2.CascadeClassifier(haarCascade)
 
@@ -59,26 +58,26 @@ while (capture.isOpened()):
 
     image = imutils.resize(image, width=600)
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # for haar cascade
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # For haar cascade
 
-    # detect face using haar cascades
+    # Detect face using haar cascades
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
     rects = []
-    # convert bounding boxes (x, y, w, h) to face locations in css (top, right, bottom, left) order
+    # Convert bounding boxes (x, y, w, h) to face locations in css (top, right, bottom, left) order
     for (x,y,w,h) in faces:
         rects.append([y, x+w, y+h, x])
     
-    # get encoding of detected faces
+    # Get encoding of detected faces
     encodings = face_recognition.face_encodings(rgb, rects)
 
-    #sending encodings
-    send_encodings(URL_SERVER,PAGE,encodings)
-
+    # Sending encodings and getting ID
+    r=send_encodings(URL_SERVER,PAGE,encodings)
+    
+    id=(r["id"]) #Extracting the ID from the json response
+    
     userIDs = []
     
-    id = "Unknownnn"
-
-    # loop over the recognized faces
+    # Loop over the recognized faces
     for ((x1, y1, x2, y2), id) in zip(rects,id):
         # draw the predicted face id on the image
         cv2.rectangle(image, (y2, x1), (y1, x2), (0, 255, 0), 2)

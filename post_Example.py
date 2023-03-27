@@ -34,11 +34,20 @@ def send_encodings(URL_SERVER,PAGE,Encoding):
     encodedNumpyData=json.dumps(arrayEncoding,cls=NumpyArrayEncoder)
     msg={"encoding":encodedNumpyData}
     r = requests.post(URL_SERVER+PAGE,json=msg)
-    return print(f"Response: {r.json()}")
+    return r.json()
 
 
-send_encodings(URL_SERVER,PAGE,encodings)
+r=send_encodings(URL_SERVER,PAGE,encodings)
+res= r['message']
 
+if res=='UserNoFound':
+    id='Usuario no encontrado'
+else:
+    id_name=(r['person']['FirstName']) #Extracting the ID from the json response
+    id_lastname=(r["person"]["LastName"])
+    id=(id_name+' '+id_lastname)
+
+print(id)
 
 
 

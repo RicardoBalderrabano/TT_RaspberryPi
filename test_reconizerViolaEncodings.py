@@ -72,8 +72,16 @@ while (capture.isOpened()):
 
     # Sending encodings and getting ID
     r=send_encodings(URL_SERVER,PAGE,encodings)
-    
-    id=(r["id"]) #Extracting the ID from the json response
+       
+    res= r['message'] #Checking the response in the JSON 
+
+    #Is the user found? 
+    if res=='UserNoFound':
+        id='Usuario no encontrado'
+    else:
+        id_name=(r['person']['FirstName']) #Extracting the ID from the json response
+        id_lastname=(r["person"]["LastName"])
+        id=(id_name+' '+id_lastname)
     
     userIDs = []
     
@@ -83,7 +91,7 @@ while (capture.isOpened()):
         cv2.rectangle(image, (y2, x1), (y1, x2), (0, 255, 0), 2)
         y = x1 - 15 if x1 - 15 > 15 else x1 + 15
         cv2.putText(image, id, (y2, y), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.75, (0, 255, 0), 2)
+                    0.5, (0, 255, 0), 2)
 
     cv2.imshow('Recognizer', image)
     if (cv2.waitKey(1) == 27):

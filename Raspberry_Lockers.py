@@ -1,4 +1,4 @@
-""" Facial Detection
+""" Facial Detection for Lockers RaspberryPi
 This script performs the face detection, this script use haarcascades proposed by
 Paul Viola and Michael Jones in their paper, 
 "Rapid Object Detection using a Boosted Cascade of Simple Features" 
@@ -13,15 +13,25 @@ import cv2
 import face_recognition
 import pickle
 import os
-from server_connection import send_encodings
+from server_connection import send_encodingsLockers, updateDB
 import json
 from flask import request
+from lockers_functions import openLocker
+from server_connection import getLockers
+from ast import literal_eval
 
-#from smbus import SMBus
+# Libraries for I2C Configuration
+from smbus import SMBus
 from itertools import cycle
 from time import sleep
 
-#SERVER DIRECTION
+
+bus = SMBus(1) # Port 1 used on REV2 
+
+bus.write_byte(0x38,0x00)   # All the ports in LOW
+sleep(1)                    # 1 second time
+
+# SERVER DIRECTION
 URL_SERVER = 'http://140.84.179.17:80'
 PAGE = "/encodings"
 
@@ -51,30 +61,51 @@ while (capture.isOpened()):
     encodings = face_recognition.face_encodings(rgb, rects)
 
     # Sending encodings and getting ID
-    r=send_encodings(URL_SERVER,PAGE,encodings)
+    r=send_encodingsLockers(URL_SERVER,PAGE,encodings)
        
-    res= r['message'] #Checking the response in the JSON 
+    res= r['message'] # Checking the response in the JSON 
 
-    #Is the user found? 
+    # Is the user found? 
     if res=='UserNoFound':
-        id=['Usuario no encontrado']
+        idname=['Usuario no encontrado'] # ID NAME 
     else:
-        id_name=(r['person']['FirstName']) #Extracting the ID from the json response
+        id_name=(r['person']['FirstName']) # Extracting the ID from the json response
         id_lastname=(r["person"]["LastName"])
-        id=[(id_name+' '+id_lastname)]
+        idname=[(id_name+' '+id_lastname)] # ID NAME
+        id=(r['person']['UserID']) # UserID NUMBER
     
     userIDs = []
     
     # Loop over the recognized faces
-    for ((x1, y1, x2, y2), id) in zip(rects,id):
+    for ((x1, y1, x2, y2), idname) in zip(rects,idname):
         # draw the predicted face id on the image
         cv2.rectangle(image, (y2, x1), (y1, x2), (0, 255, 0), 2)
         y = x1 - 15 if x1 - 15 > 15 else x1 + 15
-        cv2.putText(image, id, (y2, y), cv2.FONT_HERSHEY_SIMPLEX,
+        cv2.putText(image, idname, (y2, y), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
 
     cv2.imshow('Recognizer', image)
     if (cv2.waitKey(1) == 27):
+        break
+
+    # OPEN LOCKER FUNCTIONS 
+
+    lockerfree=getLockers(id)  #Getting Locker Direction for the available Locker 
+    lockerO=lockerfree['LockerFree']['LockerID'] # Obtaining Locker Direction from the JSON 
+    hex_lock=literal_eval(lockerO) #Converting str to hex integer 
+   
+
+    #OPEN LOCKER?
+    print("Do you want to open your locker?\n")
+    resLock=input("Y or N")
+
+    if resLock=='Y':
+        openLocker(hex_lock)    # Calling function to open the locker
+        updateDB(id, lockerO)   # Updating the TABLKE LockersUsers with UserID, LockerID, DATE, TIME
+        print("User registered successfully")
+        break
+    else:
+        print("Thank you")
         break
 
 capture.release()

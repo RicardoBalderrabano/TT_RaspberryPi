@@ -20,7 +20,7 @@ def openLocker(lockerID): # Getting the Locker direction
 def getStatusLockers(userID):
     res=getLockers(userID)
     locker=res['LockerFree']
-    return jasonify(locker)'''
+    return jasonify(locker)
 
 '''
 

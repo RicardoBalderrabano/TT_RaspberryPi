@@ -33,7 +33,13 @@ haarCascade = '/home/ricardo/TT_tests/haarcascade_frontalface_default.xml'  #for
 
 face_cascade = cv2.CascadeClassifier(haarCascade)
 
-while (capture.isOpened()):
+# Face detected flag
+face_detected=False
+
+while True:
+
+    capture.isOpened()  # OPEN CAMERA
+
     ret, image = capture.read()
 
     image = imutils.resize(image, width=600)
@@ -41,40 +47,51 @@ while (capture.isOpened()):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # For haar cascade
 
     # Detect face using haar cascades
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    rects = []
-    # Convert bounding boxes (x, y, w, h) to face locations in css (top, right, bottom, left) order
-    for (x,y,w,h) in faces:
-        rects.append([y, x+w, y+h, x])
+    faces = face_cascade.detectMultiScale(
+        gray, 
+        scaleFactor=1.3, 
+        minNeighbors=5,
+        minSize=(190,190))
     
-    # Get encoding of detected faces
-    encodings = face_recognition.face_encodings(rgb, rects)
+    if len(faces)>0:
+        face_detected=True
+        rects = []
+        # Convert bounding boxes (x, y, w, h) to face locations in css (top, right, bottom, left) order
+        for (x,y,w,h) in faces:
+            rects.append([y, x+w, y+h, x])
+        
+        # Get encoding of detected faces
+        encodings = face_recognition.face_encodings(rgb, rects)
 
-    # Sending encodings and getting ID
-    r=send_encodings(URL_SERVER,PAGE,encodings)
-       
-    res= r['message'] #Checking the response in the JSON 
+        # Sending encodings and getting ID
+        r=send_encodings(URL_SERVER,PAGE,encodings)
+        
+        res= r['message'] #Checking the response in the JSON 
 
-    #Is the user found? 
-    if res=='UserNoFound':
-        id=['Usuario no encontrado']
+        #Is the user found? 
+        if res=='UserNoFound':
+            id=['Usuario no encontrado']
+        else:
+            id_name=(r['person']['FirstName']) #Extracting the ID from the json response
+            id_lastname=(r["person"]["LastName"])
+            id=[(id_name+' '+id_lastname)]
+        
+        userIDs = []
+        
+        # Loop over the recognized faces
+        for ((x1, y1, x2, y2), id) in zip(rects,id):
+            # draw the predicted face id on the image
+            cv2.rectangle(image, (y2, x1), (y1, x2), (0, 255, 0), 2)
+            y = x1 - 15 if x1 - 15 > 15 else x1 + 15
+            cv2.putText(image, id, (y2, y), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (0, 255, 0), 2)
+        cv2.imshow('Recognizer', image)
+        if (cv2.waitKey(1) == 27):
+            break
     else:
-        id_name=(r['person']['FirstName']) #Extracting the ID from the json response
-        id_lastname=(r["person"]["LastName"])
-        id=[(id_name+' '+id_lastname)]
-    
-    userIDs = []
-    
-    # Loop over the recognized faces
-    for ((x1, y1, x2, y2), id) in zip(rects,id):
-        # draw the predicted face id on the image
-        cv2.rectangle(image, (y2, x1), (y1, x2), (0, 255, 0), 2)
-        y = x1 - 15 if x1 - 15 > 15 else x1 + 15
-        cv2.putText(image, id, (y2, y), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
-
-    cv2.imshow('Recognizer', image)
-    if (cv2.waitKey(1) == 27):
-        break
+        face_detected=False
+        cv2.imshow('Recognizer', image)
+        if (cv2.waitKey(1) == 27):
+            break
 
 capture.release()

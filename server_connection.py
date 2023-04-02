@@ -56,6 +56,8 @@ def getLockers(UserID):
     return r.json() # Getting lockers registered and Locker ID/Direction to be opened
 
 # CHECK IF THE USER HAS ALREADY A LOCKER
+# Returns the LockerID :
+# When the user has already a locker or assigs a new locker
 def checkLocker(UserID):
     checkLo='/CheckLocker'
     msg={'UserID':UserID} # Sending UserID
@@ -63,15 +65,11 @@ def checkLocker(UserID):
     return r.json() # Getting lockers registered and Locker ID/Direction to be opened
 
 # UPDATE DB FUNCTION 
-def updateDB(UserID, LockerID, leaveflag): # Getting UserID and LockerID to be registered 
+# leaveflag is 1 when the user will use the locker again, 2 when the user leaves the Building
+def updateDB(UserID, LockerID, leaveflag): # Getting UserID, LockerID to be registered and leaveflag 
     update_direc='/updateRegister' # Direction for API
-    UserID_Str=UserID # Convert int to str (UserID)
-    LeaveFlag=leaveflag
-    msg={'UserID':UserID_Str, 'LockerID': LockerID, 'Leaveflag': LeaveFlag} # UserID and LockerID Message (JSON) 
+    UserID_Str=UserID   # UserID
+    LeaveFlag=leaveflag # leaveflag 
+    msg={'UserID':UserID_Str, 'LockerID': LockerID, 'Leaveflag': LeaveFlag} # UserID, LockerID and leaveflag Message (JSON) 
     R=requests.post(URL_SERVER+update_direc,json=msg) # POST to the direction
     return 
-'''
-UserID=1
-DIRE='0x01'
-r=updateDB(UserID, DIRE,1)
-print(r)'''

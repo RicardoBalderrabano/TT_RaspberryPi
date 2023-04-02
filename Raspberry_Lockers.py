@@ -59,7 +59,7 @@ while True:
         gray, 
         scaleFactor=1.3, 
         minNeighbors=5,
-        minSize=(190,190))
+        minSize=(190,190))  # Modify the distance to detect a face
 
     if len(faces)>0:
         face_detected=True
@@ -73,8 +73,6 @@ while True:
 
         # Sending encodings and getting ID
         r=send_encodingsLockers(URL_SERVER,PAGE,encodings)
-        
-        print(r)
 
         res= r['message'] # Checking the response in the JSON 
 
@@ -107,19 +105,18 @@ while True:
                 break
 
             # OPEN LOCKER FUNCTIONS 
-            '''
-            lockerfree=getLockers(id)  #Getting Locker Direction for the available Locker 
-            lockerO=lockerfree['LockerFree']['LockerID'] # Obtaining Locker Direction from the JSON 
-            hex_lock=literal_eval(lockerO) #Converting str to hex integer '''
 
-            lockerfree=checkLocker(id)
-            print(lockerfree)
-            lockerO=lockerfree['LockerFree']['LockerID']
-            print(lockerO)
-            hex_lock=literal_eval(lockerO) #Converting str to hex integer
+            lockerfree=checkLocker(id)  # Getting LOCKER ID
+            lockerO=lockerfree['LockerFree']['LockerID']    # Selecting LockerID
+            hex_lock=literal_eval(lockerO)  # Converting str to hex integer
 
-            openflag=lockerfree['Openflag']
+            openflag=lockerfree['Openflag'] # Getiing value Openflag 
 
+            # When Openflag = 0: The USER Does not have any locker so automatically assign a Locker --> Option to Open locker
+            # When Openflag = 1: Ther USER already have a locker so is able to :
+            #       --> Option to Open locker and still using it 
+            #       --> Option to Open locker and leave the laboratory 
+            # Openflag is sent by a query from the API to the DB
             if openflag==0:
                 #OPEN LOCKER?
                 print("Do you want to open your locker?\n")
@@ -127,7 +124,9 @@ while True:
 
                 if resLock=='Y':
                     openLocker(hex_lock)    # Calling function to open the locker
-                    updateDB(id, lockerO, 1)   # Updating the TABLKE LockersUsers with UserID, LockerID, DATE, TIME
+                    # updateDB (UserID, LockerID, leaveflag)  
+                    # leaveflag = 1 when the User will use again the locker
+                    updateDB(id, lockerO, 1)   # Updating the TALKE LockersUsers with UserID, LockerID, DATE, TIME
                     print("User registered successfully")
                 else:
                     print("Thank you")
@@ -137,12 +136,13 @@ while True:
                 resLock=input("O or L")
                 if resLock=='O':
                     openLocker(hex_lock)    # Calling function to open the locker
-                    updateDB(id, lockerO, 1)   # Updating the TABLKE LockersUsers with UserID, LockerID, DATE, TIME
+                    # leaveflag = 1 when the User will use again the locker
+                    updateDB(id, lockerO, 1)   # Updating the TABLE LockersUsers with UserID, LockerID, DATE, TIME
                     print("User registered successfully")
                 elif resLock=='L':
                     openLocker(hex_lock)    # Calling function to open the locker
-                    #### FUNCTION TO UPDATE LOCKER FREE IN LOCKERS TABLE
-                    updateDB(id, lockerO, 2)   # Updating the TABLKE LockersUsers with UserID, LockerID, DATE, TIME
+                    # leaveflag = 2 when the User won´t use again the locker (Leave the laboratory)
+                    updateDB(id, lockerO, 2)   # Updating the TABLE LockersUsers with UserID, LockerID, DATE, TIME
 
                 else:
                     print("incorrect answer")

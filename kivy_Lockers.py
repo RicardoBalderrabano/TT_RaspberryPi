@@ -16,7 +16,7 @@ Buttons - Each button has a function when are pressed, and it will Update a the 
 
 IMPORTANT: Before running in raspi run "export DISPLAY=:0"
 '''
-# DELAY WHEN BUTTON IS PRESSED
+# Buttons pressed 2 times
 # DELAY WHEN FACE IS DETECTED
 # ALL BUTTONS WORKING 
 
@@ -32,7 +32,9 @@ from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 import time
 from kivy.uix.floatlayout import FloatLayout
-
+from kivy.uix.popup import Popup
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
 
 # Face recognition and flask libraries
 import cv2
@@ -153,8 +155,8 @@ class CamApp(App):
         self.btn2=Button(text='LIBERAR LOCKER', font_size=30, size_hint=(0.33, .15), pos_hint={"x":0.33, "bottom":1})   # Button to leave locker/building
         self.btn3=Button(text='CANCELAR', font_size=30, size_hint=(0.33, .15), pos_hint={"x":0.66, "bottom":1})         # Button to cancel the operation
 
-        self.btn1.bind(on_press = self.OpenLocker)       # When btn1 pressed call function OpenLocker
-        self.btn2.bind(on_press = self.SetFreeLocker)    # When btn1 pressed call function SetFreeLocker
+        self.btn1.bind(on_press = self.ThreadOpenLockers)       # When btn1 pressed call function OpenLocker
+        self.btn2.bind(on_press = self.ThreadSetFreeLocker)    # When btn1 pressed call function SetFreeLocker
         self.btn3.bind(on_press = self.Cancel)           # When btn1 pressed call function Cancel
 
         layout = FloatLayout()          # Defining the type of Layout to use
@@ -180,15 +182,38 @@ class CamApp(App):
         updateDB(id, lockerO, 1)        # Updating the TALKE LockersUsers with UserID, LockerID, DATE, TIME
         print("User registered successfully") 
         
+    def ThreadOpenLockers(self, event):     # Function for OpenLockerThread when btn1 is pressed 
+        thLo = threading.Thread(target=self.OpenLocker, args=(event,)).start()   # Defining the THREAD for OpenLocker}
+        
+        layout = GridLayout(cols = 1, padding = 10)
+        
+  
+        popupLabel = Label(text = "LOCKER 3 HA SIDO ABIERTO")
+        closeButton = Button(text = "OK", font_size=30, size_hint_y=None, height=80)
+  
+        layout.add_widget(popupLabel)
+        layout.add_widget(closeButton)       
+  
+        # Instantiate the modal popup and display
+        popup = Popup(title ='Aviso',
+                      content = layout,
+                      size_hint =(None, None), size =(400, 400))  
+        popup.open()   
+  
+        # Attach close button press with popup.dismiss action
+        closeButton.bind(on_press = popup.dismiss)
 
     def SetFreeLocker(self, event):     # Function - when "Liberar Locker" is pressed}
         global hex_lock, lockerO, id    # Global variables updated in the THREAD 
         openLocker(hex_lock)            # Calling function to open the locker
         # leaveflag = 2 when the User wont use again the locker (Leave the laboratory)
         updateDB(id, lockerO, 2)   # Updating the TABLE LockersUsers with UserID, LockerID, DATE, TIME
+
+    def ThreadSetFreeLocker(self, event):     # Function for SetLockerThread when btn1 is pressed 
+        thFreeLo = threading.Thread(target=self.SetFreeLocker, args=(event,)).start()   # Defining the THREAD for SetFreeLocker      
         
     def Cancel(self, event):            # Function - when "Cancelar" is pressed
-        print("Has cancelado la operacion")
+        print("Has cancelado la operacion")                                                                
 
     def update(self, dt):
 

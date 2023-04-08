@@ -73,3 +73,14 @@ def updateDB(UserID, LockerID, leaveflag): # Getting UserID, LockerID to be regi
     msg={'UserID':UserID_Str, 'LockerID': LockerID, 'Leaveflag': LeaveFlag} # UserID, LockerID and leaveflag Message (JSON) 
     R=requests.post(URL_SERVER+update_direc,json=msg) # POST to the direction
     return 
+
+# INSERT DB FOR LABORATORIES 
+# Send the UserIID, LaboratoryID to the /registrationL route
+def updateDB_Laboratory(UserID, LaboratoryID):
+    update_direc='/registrationL' 
+    msg={'UserID': UserID, 'LaboratoryID':LaboratoryID}
+    R=requests.post(URL_SERVER+update_direc, json=msg)  
+    return R.json()     # Registration done message / ACCESO NEGADO 
+'''
+resInser=updateDB_Laboratory(1,1)  # LaboratoryID
+print(resInser)'''

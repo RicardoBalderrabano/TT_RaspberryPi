@@ -29,7 +29,7 @@ from time import sleep
 bus = SMBus(1) # Port 1 used on REV2 
 
 bus.write_byte(0x38,0x00)   # All the ports in LOW
-sleep(1)                    # 1 second time
+#sleep(1)                    # 1 second time
 
 
 # SERVER DIRECTION

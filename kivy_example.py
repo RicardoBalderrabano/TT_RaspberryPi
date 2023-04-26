@@ -35,7 +35,7 @@ class CamApp(App):
         self.btn2=Button(text='LIBERAR LOCKER', font_size=30, size_hint=(0.33, .15), pos_hint={"x":0.33, "bottom":1})
         self.btn3=Button(text='CANCELAR', font_size=30, size_hint=(0.33, .15), pos_hint={"x":0.66, "bottom":1})
 
-        self.btn1.bind(on_press = self.callback)
+        self.btn1.bind(on_release = self.callback)
 
         layout = FloatLayout()
         layout.add_widget(self.img1)

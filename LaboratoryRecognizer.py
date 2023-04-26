@@ -8,7 +8,7 @@ obtain the encoding for the face and then the information is sended using the fu
 from the server_connection.py, the value returned is the name of the person (if exists in the database).
 """
 
-# This script is used for the laboratory registratin of the user
+# This script is used for the laboratory registration of the user
 # Use the function updateDB_Laboratory to make the registration in the DB
 
 import imutils
@@ -79,7 +79,7 @@ while True:
             id_lastname=(r["person"]["LastName"])
             id=[(id_name+' '+id_lastname)]
             UserID=(r['person']['UserID'])
-
+            print(UserID)
         # INSERT REGISTRATION
         resInser=updateDB_Laboratory(UserID, 1)  # LaboratoryID
         print(resInser)

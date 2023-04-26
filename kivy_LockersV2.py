@@ -74,63 +74,23 @@ face_cascade = cv2.CascadeClassifier(haarCascade)
 IDlocker='0'
 buttonsFlag=0
 
-def rec_function(encodings):
-    global buttonsFlag
-    global idname
-    global hex_lock, lockerO, id, idname, openflag, IDlocker
-    userIDs = []
-    print("Reconociendo...")
-
-    # Sending encodings and getting ID
-    r=send_encodingsLockers(URL_SERVER,PAGE,encodings)
-
-    res= r['message'] # Checking the response in the JSON 
-
-    # Is the user found? 
-    if res=='UserNoFound':                  # User no founded
-        idname=['Usuario no encontrado']    # ID NAME 
-        
-    elif res=='FACE RECOGNITION ERROR':     # Face recognition error
-        idname=['FACE RECOGNITION ERROR']         
-
-    else:                                       # User is founded in the DB
-        id_name=(r["person"]["FirstName"])      # Extracting the ID NAME from the json response
-        id_lastname=(r["person"]["LastName"])
-        idname=[(id_name+' '+id_lastname)]      # ID NAME
-        id=(r['person']['UserID'])              # UserID NUMBER
-        
-        # OPEN LOCKER FUNCTIONS 
-        lockerfree=checkLocker(id)                      # Getting LOCKER ID
-        lockerO=lockerfree['LockerFree']['LockerID']    # Selecting LockerID
-        IDlocker=str(lockerfree['LockerFree']['DirectionF']) # Locker number
-        #print(lockerO)
-        #print(IDlocker)
-        hex_lock=literal_eval(lockerO)                  # Converting str to hex integer
-        openflag=lockerfree['Openflag']                 # Getiing value Openflag 
-
-        userIDs.append(idname)      #  When is appended the FOR is used but not neccesary because just one face will be detected     
-    print("Reconocido!")
 
 
 class CamApp(App):
 
     def build(self):
+
         self.img1=Image()       #For video
-        self.btn1=Button(text='ABRIR LOCKER', font_size=30, size_hint=(0.33, .15), pos_hint={"x":0, "bottom":1}, opacity=1, disabled= False)                    # Button to open Locker
-        self.btn2=Button(text='LIBERAR LOCKER', font_size=30, size_hint=(0.33, .15), pos_hint={"x":0.33, "bottom":1}, opacity=1, disabled= False)   # Button to leave locker/building
-        self.btn3=Button(text='CANCELAR', font_size=30, size_hint=(0.33, .15), pos_hint={"x":0.66, "bottom":1}, opacity=1, disabled= False)         # Button to cancel the operation
+        self.btn1=Button(text='REGISTRAR', font_size=30, size_hint=(1,.18), pos_hint={"x":0, "bottom":1}, opacity=1, disabled= False)  # Button to do registration
+        
+        self.btn1.bind(on_release = self.rec_function)       # When btn1 pressed call function OpenLocker
 
-        self.btn1.bind(on_release = self.ThreadOpenLockers)       # When btn1 pressed call function OpenLocker
-        self.btn2.bind(on_release = self.ThreadSetFreeLocker)    # When btn1 pressed call function SetFreeLocker
-        self.btn3.bind(on_release = self.Cancel)           # When btn1 pressed call function Cancel
-
-        layout = FloatLayout()          # Defining the type of Layout to use
+        #layout = FloatLayout()          # Defining the type of Layout to use
+        layout = BoxLayout(orientation='vertical')
         layout.add_widget(self.img1)    #Adding the img1 (video)
         
-        # Adding the 3 buttons (Are being showed on the screen)
+        # Adding the button (Shows on the screen)
         layout.add_widget(self.btn1)
-        layout.add_widget(self.btn2)
-        layout.add_widget(self.btn3)
         
         # Opencv2
         self.capture = cv2.VideoCapture(0)  # For camera in raspi
@@ -138,6 +98,7 @@ class CamApp(App):
         Clock.schedule_interval(self.update, 1.0/33.0)
 
         return layout
+
 
     def OpenLocker(self, event):        # Function - wheen "Abrir Locker" is pressed
         global hex_lock, lockerO, id    # Global variables updated in the THREAD 
@@ -148,8 +109,10 @@ class CamApp(App):
         print("User registered successfully")
 
     global IDlocker  
+
     
     def ThreadOpenLockers(self, event):     # Function for OpenLockerThread when btn1 is pressed 
+        global popup2, popup
         thLo = threading.Thread(target=self.OpenLocker, args=(event,)).start()   # Defining the THREAD for OpenLocker}
         
         layout = GridLayout(cols = 1, padding = 10)
@@ -169,6 +132,8 @@ class CamApp(App):
   
         # Attach close button press with popup.dismiss action
         closeButton.bind(on_press = popup.dismiss)
+        closeButton.bind(on_press = popup2.dismiss)
+
 
     def SetFreeLocker(self, event):     # Function - when "Liberar Locker" is pressed}
         global hex_lock, lockerO, id    # Global variables updated in the THREAD 
@@ -179,29 +144,124 @@ class CamApp(App):
     def ThreadSetFreeLocker(self, event):     # Function for SetLockerThread when btn1 is pressed 
         thFreeLo = threading.Thread(target=self.SetFreeLocker, args=(event,)).start()   # Defining the THREAD for SetFreeLocker      
         
+        layout = GridLayout(cols = 1, padding = 10)
+
+        popupLabel = Label(text = "LOCKER " + IDlocker + " HA SIDO LIBERADO")
+        closeButton = Button(text = "OK", font_size=30, size_hint_y=None, height=80)
+  
+        layout.add_widget(popupLabel)
+        layout.add_widget(closeButton)  
+  
+        # Instantiate the modal popup and display
+        popup = Popup(title ='Aviso',
+                      content = layout,
+                      size_hint =(None, None), size =(400, 400))  
+        popup.open()   
+  
+        # Attach close button press with popup.dismiss action
+        closeButton.bind(on_press = popup.dismiss)
+        closeButton.bind(on_press = popup2.dismiss)
+
     def Cancel(self, event):            # Function - when "Cancelar" is pressed
         print("Has cancelado la operacion")       
 
     def ThreadCancel(self, event):
         thCancel=threading.Thread(target=self.Cancel, args=(event,)).start()
 
+    def rec_function(self, event):
+        global rects, rgb, idname, popup2, lockerO, id, hex_lock
+        closeButton = Button(text = "CANCELAR", font_size=30, size_hint_y=None, height=80)
+        self.btn1=Button(text='ABRIR LOCKER', font_size=30, size_hint_y=None, height=80)                    # Button to open Locker
+        self.btn2=Button(text='LIBERAR LOCKER', font_size=30, size_hint_y=None, height=80)   # Button to leave locker/building
+        layout = GridLayout(cols = 1, padding = 10)
+
+        encodings = face_recognition.face_encodings(rgb, rects) # Get encoding of detected faces
+        print("Reconociendo...")
+
+        # Sending encodings and getting ID
+        r=send_encodingsLockers(URL_SERVER,PAGE,encodings)
+
+        res= r['message'] # Checking the response in the JSON 
+
+        # Is the user found? 
+        if res=='UserNoFound':                  # User no founded
+            idname='Usuario no encontrado en la base de datos. \n Dirigirse con el administrador.'    # ID NAME 
+            
+        elif res=='FACE RECOGNITION ERROR':     # Face recognition error
+            idname='Error en el reconocimiento facial. Presione OK y vuelva a intentarlo.'       
+
+        else:                                       # User is founded in the DB
+        
+            id_name=(r["person"]["FirstName"])      # Extracting the ID NAME from the json response
+            id_lastname=(r["person"]["LastName"])
+            idname1=[(id_name+' '+id_lastname)]      # ID NAME
+            #idname='REGISTRO EXITOSO ' + idname1[0]
+            id=(r['person']['UserID'])              # UserID NUMBER
+            idname=idname1[0]
+            # OPEN LOCKER FUNCTIONS 
+            lockerfree=checkLocker(id)                      # Getting LOCKER ID
+            lockerO=lockerfree['LockerFree']['LockerID']    # Selecting LockerID
+            IDlocker=str(lockerfree['LockerFree']['DirectionF']) # Locker number
+            print(lockerO)
+            print(lockerfree)
+            hex_lock=literal_eval(lockerO)                  # Converting str to hex integer
+            openflag=lockerfree['Openflag']                 # Getiing value Openflag 
+
+            # When Openflag = 0: The USER Does not have any locker so automatically assign a Locker --> Option to Open locker
+            # When Openflag = 1: Ther USER already have a locker so is able to :
+            #       --> Option to Open locker and still using it 
+            #       --> Option to Open locker and leave the laboratory 
+            # Openflag is sent by a query from the API to the DB
+            print(openflag)
+            if openflag==0:
+                # ENABLE 2 BUTTONS
+
+                popupLabel = Label(text = idname)
+
+
+                layout.add_widget(popupLabel)
+                layout.add_widget(closeButton) 
+                layout.add_widget(self.btn1) 
+        
+                # Instantiate the modal popup and display
+                popup2 = Popup(title ='Aviso',
+                            content = layout,
+                            size_hint =(None, None), size =(800, 600))  
+                popup2.open()   
+        
+                # Attach close button press with popup.dismiss action
+                closeButton.bind(on_press = popup2.dismiss)
+                self.btn1.bind(on_release = self.ThreadOpenLockers)       # When btn1 pressed call function OpenLocker
+            
+            else:
+                # ENABLE 3 BUTTONS
+
+                popupLabel = Label(text = idname)
+
+                layout.add_widget(popupLabel)
+                layout.add_widget(closeButton) 
+                layout.add_widget(self.btn1) 
+                layout.add_widget(self.btn2)
+ 
+        
+                # Instantiate the modal popup and display
+                popup2 = Popup(title ='Aviso',
+                            content = layout,
+                            size_hint =(None, None), size =(400, 400))  
+                popup2.open()   
+        
+                # Attach close button press with popup.dismiss action
+                closeButton.bind(on_press = popup.dismiss)
+                self.btn1.bind(on_release = self.ThreadOpenLockers)       # When btn1 pressed call function OpenLocker
+                self.btn2.bind(on_release = self.ThreadSetFreeLocker)    # When btn1 pressed call function SetFreeLocker
+
     def update(self, dt):
 
-        global detectFace                       # Global variables updated in the THREAD 
-        global idname, userIDs, openflag, IDlocker
-        global y1,y2,x1,x2                      # This variables are global when the for is not used 
-        
-        self.btn1.opacity=0
-        self.btn1.disabled= True  
-        self.btn2.opacity=0
-        self.btn2.disabled= True
-        self.btn3.opacity=0
-        self.btn3.disabled= True 
-
+        global rects, rgb
+        rects = []
         ret, frame = self.capture.read()        # Inizialize camera and save frames in frame
-        # THREADS
 
-        frame = imutils.resize(frame, width=600)
+        frame = imutils.resize(frame, width=900)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # for haar cascade
 
@@ -212,61 +272,16 @@ class CamApp(App):
             minNeighbors=5,
             minSize=(190,190))  # Modify the distance to detect a face
 
-        rects = []
-
         # convert bounding boxes (x, y, w, h) to face locations in css (top, right, bottom, left) order
         for (x,y,w,h) in faces:
             rects.append([y, x+w, y+h, x])
         
-        if len(faces) == 0:     # If there is any face detected
-            rects = []
-            idname = []
-            detectFace = True   # Flag to
-            openflag=0
-        
-        if detectFace == True and len(faces) != 0:                  # A face is detected and detectFace is True
-            encodings = face_recognition.face_encodings(rgb, rects) # Get encoding of detected faces
-            
-            x = threading.Thread(target=rec_function, args=(encodings,), daemon=True)   # Defining the THREAD for face recognition
-            x.start()                                                                   # THREAD  started
-            detectFace = False                                                          # After face recognition is finished
-            
-        if len(idname) > 0:                                             # If a face is recognized 
-            # loop over the recognized faces (LOOP CANCELLED)
-            finalid=idname[0]                                           # Getting the id from the vector
-            cv2.rectangle(frame, (y2, x1), (y1, x2), (0, 255, 0), 2)    # Printing green rectangle in the face recognized
-            y = x1 - 15 if x1 - 15 > 15 else x1 + 15
-            cv2.putText(frame, finalid, (y2, y), cv2.FONT_HERSHEY_SIMPLEX,  # Printing name of the user 
-                        0.5, (0, 255, 0), 2)
-
-            
-            # When Openflag = 0: The USER Does not have any locker so automatically assign a Locker --> Option to Open locker
-            # When Openflag = 1: Ther USER already have a locker so is able to :
-            #       --> Option to Open locker and still using it 
-            #       --> Option to Open locker and leave the laboratory 
-            # Openflag is sent by a query from the API to the DB
-             
-            if openflag==0:                                 # This is cancelled but should activate or desactivate the buttons
-                #OPEN LOCKER?
-                #HIDE btn2
-                self.btn1.opacity=1
-                self.btn1.disabled= False  
-                self.btn3.opacity=1
-                self.btn3.disabled= False        
-            else:              #Enable 3 buttons                             
-                self.btn1.opacity=1
-                self.btn1.disabled= False  
-                self.btn2.opacity=1
-                self.btn2.disabled= False
-                self.btn3.opacity=1
-                self.btn3.disabled= False 
-        else:                                                           # Printing red rectangle when the user is not recognized 
             for (x1, y1, x2, y2) in rects:
                 # draw the predicted face id on the image
                 cv2.rectangle(frame,(y2, x1), (y1, x2), ( 0, 255, 0), 2)
                 
         cv2.imshow('Recognizer', frame)     # Show the frame (video)
-        
+       
         # To show the imshow(frame) on the UI
         # convert it to texture
         buf1 = cv2.flip(frame, 0)

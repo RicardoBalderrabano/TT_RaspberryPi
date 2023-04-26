@@ -19,7 +19,7 @@ class NumpyArrayEncoder(JSONEncoder):
             return obj.tolist()
         return JSONEncoder.default(self, obj)
 
-# FUNCTION TO SEND ENCODING AND GET ID FROM THE DB
+# FUNCTION TO SEND ENCODING AND GET ID FROM THE DB ---> route(/encodings)
 def send_encodings(URL_SERVER,PAGE,Encoding):
 
     if not Encoding:        # For empty encoding
@@ -33,7 +33,7 @@ def send_encodings(URL_SERVER,PAGE,Encoding):
     r = requests.post(URL_SERVER+PAGE,json=msg)     # POST TO API (SERVER)
     return r.json()     # Response ID   
 
-# FUNCTION FOR RASPBERRY LOCKERS
+# FUNCTION FOR RASPBERRY LOCKERS ---> route(/encodings)
 def send_encodingsLockers(URL_SERVER, PAGE, Encoding):
     
     if not Encoding:        # For empty encoding
@@ -48,14 +48,14 @@ def send_encodingsLockers(URL_SERVER, PAGE, Encoding):
     r = requests.post(URL_SERVER+PAGE+LOCKERS,json=msg)     # POST TO API (SERVER)
     return r.json()     # Response ID   
 
-# GET ALL LOCKERS REGISTERED FUNCTION
+# GET ALL LOCKERS REGISTERED FUNCTION ---> NO USED
 def getLockers(UserID):
     status_direc='/Lockers_Status' # Direction for API
     msg={'UserID': UserID} #Sending UserID
     r=requests.post(URL_SERVER+status_direc, json=msg) # POST 
     return r.json() # Getting lockers registered and Locker ID/Direction to be opened
 
-# CHECK IF THE USER HAS ALREADY A LOCKER
+# CHECK IF THE USER HAS ALREADY A LOCKER ---> route(/CheckLocker)
 # Returns the LockerID :
 # When the user has already a locker or assigs a new locker
 def checkLocker(UserID):
@@ -64,7 +64,7 @@ def checkLocker(UserID):
     r=requests.post(URL_SERVER+checkLo, json=msg) # POST 
     return r.json() # Getting lockers registered and Locker ID/Direction to be opened
 
-# UPDATE DB FUNCTION 
+# UPDATE DB FUNCTION ---> route(/updateRegister)
 # leaveflag is 1 when the user will use the locker again, 2 when the user leaves the Building
 def updateDB(UserID, LockerID, leaveflag): # Getting UserID, LockerID to be registered and leaveflag 
     update_direc='/updateRegister' # Direction for API
@@ -74,8 +74,8 @@ def updateDB(UserID, LockerID, leaveflag): # Getting UserID, LockerID to be regi
     R=requests.post(URL_SERVER+update_direc,json=msg) # POST to the direction
     return 
 
-# INSERT DB FOR LABORATORIES 
-# Send the UserIID, LaboratoryID to the /registrationL route
+# INSERT DB FOR LABORATORIES ---> route(/registrationL)
+# Send the UserIID, LaboratoryID 
 def updateDB_Laboratory(UserID, LaboratoryID):
     update_direc='/registrationL' 
     msg={'UserID': UserID, 'LaboratoryID':LaboratoryID}

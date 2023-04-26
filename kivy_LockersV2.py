@@ -108,11 +108,9 @@ class CamApp(App):
         updateDB(id, lockerO, 1)        # Updating the TALKE LockersUsers with UserID, LockerID, DATE, TIME
         print("User registered successfully")
 
-    global IDlocker  
-
-    
     def ThreadOpenLockers(self, event):     # Function for OpenLockerThread when btn1 is pressed 
-        global popup2, popup
+        global popup2, popup, IDlocker
+        print(IDlocker + 'el asignado')
         thLo = threading.Thread(target=self.OpenLocker, args=(event,)).start()   # Defining the THREAD for OpenLocker}
         
         layout = GridLayout(cols = 1, padding = 10)
@@ -169,10 +167,11 @@ class CamApp(App):
         thCancel=threading.Thread(target=self.Cancel, args=(event,)).start()
 
     def rec_function(self, event):
-        global rects, rgb, idname, popup2, lockerO, id, hex_lock
+        global rects, rgb, idname, popup2, lockerO, id, hex_lock, IDlocker
         closeButton = Button(text = "CANCELAR", font_size=30, size_hint_y=None, height=80)
         self.btn1=Button(text='ABRIR LOCKER', font_size=30, size_hint_y=None, height=80)                    # Button to open Locker
         self.btn2=Button(text='LIBERAR LOCKER', font_size=30, size_hint_y=None, height=80)   # Button to leave locker/building
+        self.btn3=Button(text='OK', font_size=30, size_hint_y=None, height=80)   # Button to leave locker/building
         layout = GridLayout(cols = 1, padding = 10)
 
         encodings = face_recognition.face_encodings(rgb, rects) # Get encoding of detected faces
@@ -183,12 +182,37 @@ class CamApp(App):
 
         res= r['message'] # Checking the response in the JSON 
 
+
         # Is the user found? 
         if res=='UserNoFound':                  # User no founded
             idname='Usuario no encontrado en la base de datos. \n Dirigirse con el administrador.'    # ID NAME 
+            popupLabel = Label(text = idname)
+            layout.add_widget(popupLabel)
+            layout.add_widget(self.btn3) 
+        
+            # Instantiate the modal popup and display
+            popup2 = Popup(title ='Aviso',
+                        content = layout,
+                        size_hint =(None, None), size =(800, 600))  
+            popup2.open()   
+        
+            # Attach close button press with popup.dismiss action
+            self.btn3.bind(on_press = popup2.dismiss)
             
         elif res=='FACE RECOGNITION ERROR':     # Face recognition error
-            idname='Error en el reconocimiento facial. Presione OK y vuelva a intentarlo.'       
+            idname='Error en el reconocimiento facial. Presione OK y vuelva a intentarlo.' 
+            popupLabel = Label(text = idname)
+            layout.add_widget(popupLabel)
+            layout.add_widget(self.btn3) 
+        
+            # Instantiate the modal popup and display
+            popup2 = Popup(title ='Aviso',
+                        content = layout,
+                        size_hint =(None, None), size =(800, 600))  
+            popup2.open()   
+        
+            # Attach close button press with popup.dismiss action
+            self.btn3.bind(on_press = popup2.dismiss)
 
         else:                                       # User is founded in the DB
         
@@ -202,8 +226,7 @@ class CamApp(App):
             lockerfree=checkLocker(id)                      # Getting LOCKER ID
             lockerO=lockerfree['LockerFree']['LockerID']    # Selecting LockerID
             IDlocker=str(lockerfree['LockerFree']['DirectionF']) # Locker number
-            print(lockerO)
-            print(lockerfree)
+            print(IDlocker)
             hex_lock=literal_eval(lockerO)                  # Converting str to hex integer
             openflag=lockerfree['Openflag']                 # Getiing value Openflag 
 
@@ -212,7 +235,7 @@ class CamApp(App):
             #       --> Option to Open locker and still using it 
             #       --> Option to Open locker and leave the laboratory 
             # Openflag is sent by a query from the API to the DB
-            print(openflag)
+            
             if openflag==0:
                 # ENABLE 2 BUTTONS
 
@@ -247,11 +270,11 @@ class CamApp(App):
                 # Instantiate the modal popup and display
                 popup2 = Popup(title ='Aviso',
                             content = layout,
-                            size_hint =(None, None), size =(400, 400))  
+                            size_hint =(None, None), size =(800, 600))  
                 popup2.open()   
         
                 # Attach close button press with popup.dismiss action
-                closeButton.bind(on_press = popup.dismiss)
+                closeButton.bind(on_press = popup2.dismiss)
                 self.btn1.bind(on_release = self.ThreadOpenLockers)       # When btn1 pressed call function OpenLocker
                 self.btn2.bind(on_release = self.ThreadSetFreeLocker)    # When btn1 pressed call function SetFreeLocker
 

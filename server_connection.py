@@ -8,7 +8,8 @@ import json
 from json import JSONEncoder
 
 # Server INFORMATION 
-URL_SERVER = 'http://140.84.179.17:80'
+#URL_SERVER = 'http://140.84.179.17:80'
+URL_SERVER = 'https://faces.debugueando.com'
 PAGE = "/encodings"
 LOCKERS="/Lockers"
 
@@ -81,6 +82,12 @@ def updateDB_Laboratory(UserID, LaboratoryID):
     msg={'UserID': UserID, 'LaboratoryID':LaboratoryID}
     R=requests.post(URL_SERVER+update_direc, json=msg)  
     return R.json()     # Registration done message / ACCESO NEGADO 
-'''
-resInser=updateDB_Laboratory(1,1)  # LaboratoryID
-print(resInser)'''
+
+# INSERT DB FOR ACCESS ---> route(/BuildingAccess)
+# Send the UserIID, LaboratoryID 
+def updateDB_BuildingAccess(UserID):
+    update_direc='/BuildingAccess' 
+    msg={'UserID': UserID}
+    R=requests.post(URL_SERVER+update_direc, json=msg)  
+    return R.json()     # Registration done message 
+

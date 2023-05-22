@@ -8,8 +8,8 @@ import json
 from json import JSONEncoder
 
 # Server INFORMATION 
-#URL_SERVER = 'http://140.84.179.17:80'
-URL_SERVER = 'https://faces.debugueando.com'
+URL_SERVER = 'http://140.84.179.17:80'
+#URL_SERVER = 'https://faces.debugueando.com'
 PAGE = "/encodings"
 LOCKERS="/Lockers"
 

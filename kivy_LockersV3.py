@@ -1,3 +1,9 @@
+import os
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+activate_this_file = os.path.join(script_directory, '/home/ricardo/.virtualenvs/sbb_cv/bin/activate_this.py')
+
+
 '''
 This script performs the face detection, this script use haarcascades proposed by Paul Viola and Michael Jones in their paper, 
 "Rapid Object Detection using a Boosted Cascade of Simple Features" in 2001.
@@ -20,7 +26,7 @@ IMPORTANT: Before running in raspi run "export DISPLAY=:0"
 # DELAY WHEN FACE IS DETECTED
 # ALL BUTTONS WORKING 
 
-import os
+
 os.environ['KIVY_GL_BACKEND'] = 'gl'
 import kivy
 from kivy.app import App
@@ -35,12 +41,12 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-
+from kivy.clock import Clock
 # Face recognition and flask libraries
 import cv2
 import imutils
 import face_recognition
-from server_connection import send_encodings, updateDB_Laboratory,send_encodingsLockers
+from server_connection import send_encodings, updateDB_BuildingAccess,send_encodingsLockers
 import json
 from flask import request
 from lockers_functions import openLocker
@@ -58,6 +64,7 @@ userIDs = []
 # SERVER DIRECTION
 URL_SERVER = 'http://140.84.179.17:80'
 #URL_SERVER = 'https://faces.debugueando.com'
+
 PAGE = "/encodings"
 
 # Load haar cascade file
@@ -68,9 +75,12 @@ face_cascade = cv2.CascadeClassifier(haarCascade)
 class CamApp(App):
 
     def build(self):
+        
         self.img1=Image()       #For video
         self.btn1=Button(text='REGISTRAR', font_size=30, size_hint=(1,.18), pos_hint={"x":0, "bottom":1}, opacity=1, disabled= False)  # Button to do registration
         
+
+
         self.btn1.bind(on_release = self.rec_function)       # When btn1 pressed call function OpenLocker
 
         #layout = FloatLayout()          # Defining the type of Layout to use
@@ -113,19 +123,14 @@ class CamApp(App):
             #idname='REGISTRO EXITOSO ' + idname1[0]
             id=(r['person']['UserID'])              # UserID NUMBER
             
-            # INSERT REGISTRATION
-            resInser=updateDB_Laboratory(id, 1)  # LaboratoryID
+            # INSERT REGISTRATION IN BUILDING ACCESS
+            resInser=updateDB_BuildingAccess(id) 
             print(resInser)
-            
-            if resInser['message']=='ACCESO NEGADO':
-                idname='ACCESO NEGADO'
+                 
+            if resInser['EntranceFlag']==1:
+                idname='REGISTRO DE ENTRADA EXITOSO ' + idname1[0]
             else:
-                #userIDs.append(idname)      #  When is appended the FOR is used but not neccesary because just one face will be detected     
-                
-                if resInser['EntranceFlag']==1:
-                    idname='REGISTRO DE ENTRADA EXITOSO ' + idname1[0]
-                else:
-                    idname='REGISTRO DE SALIDA EXITOSO ' + idname1[0]
+                idname='REGISTRO DE SALIDA EXITOSO ' + idname1[0]
 
         layout = GridLayout(cols = 1, padding = 10)
         
@@ -171,6 +176,14 @@ class CamApp(App):
             for (x1, y1, x2, y2) in rects:
                 # draw the predicted face id on the image
                 cv2.rectangle(frame,(y2, x1), (y1, x2), ( 0, 255, 0), 2)
+        
+        if rects!=[]:
+            Clock.schedule_once(self.rec_function,2)
+            
+        else: 
+            print("hola")
+            
+
                 
         cv2.imshow('Recognizer', frame)     # Show the frame (video)
        

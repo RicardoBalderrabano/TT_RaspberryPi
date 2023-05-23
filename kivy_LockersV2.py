@@ -62,7 +62,7 @@ detectFace = True
 
 
 # SERVER DIRECTION
-URL_SERVER = 'http://140.84.179.17:80'
+URL_SERVER = 'https://faces.debugueando.com'
 PAGE = "/encodings"
 
 # Load haar cascade file

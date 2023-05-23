@@ -1,3 +1,8 @@
+import os
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+activate_this_file = os.path.join(script_directory, '/home/ricardo/.virtualenvs/sbb_cv/bin/activate_this.py')
+
 '''
 This script performs the face detection, this script use haarcascades proposed by Paul Viola and Michael Jones in their paper, 
 "Rapid Object Detection using a Boosted Cascade of Simple Features" in 2001.
@@ -20,7 +25,7 @@ IMPORTANT: Before running in raspi run "export DISPLAY=:0"
 # DELAY WHEN FACE IS DETECTED
 # ALL BUTTONS WORKING 
 
-import os
+
 os.environ['KIVY_GL_BACKEND'] = 'gl'
 import kivy
 from kivy.app import App
@@ -35,7 +40,6 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.clock import Clock
 
 # Face recognition and flask libraries
 import cv2
@@ -54,8 +58,8 @@ from itertools import cycle
 from time import sleep
 
 # Bus Configuration for I2C Communication
-#bus = SMBus(1) # Port 1 used on REV2 
-#bus.write_byte(0x38,0x00)   # All the ports in LOW
+bus = SMBus(1) # Port 1 used on REV2 
+bus.write_byte(0x38,0x00)   # All the ports in LOW
 
 # Variable declaration
 userIDs = []
@@ -63,8 +67,8 @@ detectFace = True
 
 
 # SERVER DIRECTION
-URL_SERVER = 'http://140.84.179.17:80'
-#URL_SERVER = 'https://faces.debugueando.com'
+#URL_SERVER = 'http://140.84.179.17:80'
+URL_SERVER = 'https://faces.debugueando.com'
 PAGE = "/encodings"
 
 # Load haar cascade file
@@ -133,7 +137,6 @@ class CamApp(App):
         # Attach close button press with popup.dismiss action
         closeButton.bind(on_press = popup.dismiss)
         closeButton.bind(on_press = popup2.dismiss)
-        Clock.schedule_once(popup2.dismiss,2)
 
 
     def SetFreeLocker(self, event):     # Function - when "Liberar Locker" is pressed}
@@ -228,22 +231,22 @@ class CamApp(App):
             # OPEN LOCKER FUNCTIONS 
             lockerfree=checkLocker(id)                      # Getting LOCKER ID
             lockerO=lockerfree['LockerFree']['LockerID']    # Selecting LockerID
-            print(lockerO)
-            if lockerO == 'None':
+
+            if lockerO=='None':
                 # POP UP "No hay lockers disponibles"
                 idname="No hay lockers disponibles"
-                popupLabel = Label(text = idname, font_size=40)
+                popupLabel = Label(text = idname)
                 layout.add_widget(popupLabel)
-                
+                layout.add_widget(closeButton) 
                 # Instantiate the modal popup and display
                 popup2 = Popup(title ='Aviso',
                             content = layout,
-                            size_hint =(None, None), size =(700, 400))  
+                            size_hint =(None, None), size =(800, 600))  
                 popup2.open()   
         
                 # Attach close button press with popup.dismiss action
-                Clock.schedule_once(popup2.dismiss,2)
-             
+                closeButton.bind(on_press = popup2.dismiss)
+
             else:
 
                 IDlocker=str(lockerfree['LockerFree']['DirectionF']) # Locker number

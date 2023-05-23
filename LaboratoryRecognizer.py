@@ -9,7 +9,7 @@ from the server_connection.py, the value returned is the name of the person (if 
 """
 
 # This script is used for the laboratory registration of the user
-# Use the function updateDB_Laboratory to make the registration in the DB
+# Use the function updateDB_Laboratory to make the registration in the DBs
 
 import imutils
 import cv2

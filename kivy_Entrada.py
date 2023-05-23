@@ -40,7 +40,7 @@ from kivy.uix.label import Label
 import cv2
 import imutils
 import face_recognition
-from server_connection import send_encodings, updateDB_Laboratory,send_encodingsLockers
+from server_connection import send_encodings, updateDB_BuildingAccess,send_encodingsLockers
 import json
 from flask import request
 from lockers_functions import openLocker
@@ -56,8 +56,9 @@ from time import sleep
 userIDs = []
 
 # SERVER DIRECTION
-URL_SERVER = 'http://140.84.179.17:80'
-#URL_SERVER = 'https://faces.debugueando.com'
+#URL_SERVER = 'http://140.84.179.17:80'
+URL_SERVER = 'https://faces.debugueando.com'
+
 PAGE = "/encodings"
 
 # Load haar cascade file
@@ -113,19 +114,14 @@ class CamApp(App):
             #idname='REGISTRO EXITOSO ' + idname1[0]
             id=(r['person']['UserID'])              # UserID NUMBER
             
-            # INSERT REGISTRATION
-            resInser=updateDB_Laboratory(id, 1)  # LaboratoryID
+            # INSERT REGISTRATION IN BUILDING ACCESS
+            resInser=updateDB_BuildingAccess(id) 
             print(resInser)
-            
-            if resInser['message']=='ACCESO NEGADO':
-                idname='ACCESO NEGADO'
+                 
+            if resInser['EntranceFlag']==1:
+                idname='REGISTRO DE ENTRADA EXITOSO ' + idname1[0]
             else:
-                #userIDs.append(idname)      #  When is appended the FOR is used but not neccesary because just one face will be detected     
-                
-                if resInser['EntranceFlag']==1:
-                    idname='REGISTRO DE ENTRADA EXITOSO ' + idname1[0]
-                else:
-                    idname='REGISTRO DE SALIDA EXITOSO ' + idname1[0]
+                idname='REGISTRO DE SALIDA EXITOSO ' + idname1[0]
 
         layout = GridLayout(cols = 1, padding = 10)
         

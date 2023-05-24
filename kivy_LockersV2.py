@@ -53,9 +53,9 @@ from smbus import SMBus
 from itertools import cycle
 from time import sleep
 
-# Bus Configuration for I2C Communication
-#bus = SMBus(1) # Port 1 used on REV2 
-#bus.write_byte(0x38,0x00)   # All the ports in LOW
+#Bus Configuration for I2C Communication
+bus = SMBus(1) # Port 1 used on REV2 
+bus.write_byte(0x38,0x00)   # All the ports in LOW
 
 # Variable declaration
 userIDs = []
@@ -63,8 +63,8 @@ detectFace = True
 
 
 # SERVER DIRECTION
-URL_SERVER = 'http://140.84.179.17:80'
-#URL_SERVER = 'https://faces.debugueando.com'
+#URL_SERVER = 'http://140.84.179.17:80'
+URL_SERVER = 'https://faces.debugueando.com'
 PAGE = "/encodings"
 
 # Load haar cascade file
@@ -226,7 +226,8 @@ class CamApp(App):
             id=(r['person']['UserID'])              # UserID NUMBER
             idname=idname1[0]
             # OPEN LOCKER FUNCTIONS 
-            lockerfree=checkLocker(id)                      # Getting LOCKER ID
+            lockerfree=checkLocker(id)  
+            print(lockerfree)                    # Getting LOCKER ID
             lockerO=lockerfree['LockerFree']['LockerID']    # Selecting LockerID
             print(lockerO)
             if lockerO == 'None':
